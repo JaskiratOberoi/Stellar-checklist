@@ -256,3 +256,8 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 .rail button.navlink { border: 0; background: none; width: 100%; font: inherit; text-align: left; }
 .rail button.navlink:hover { background: var(--surface-2); }
+@media (max-width: 640px) {
+  .count-line { grid-template-columns: 1fr; gap: 10px; }
+  .count-line .qty { justify-content: flex-start; }
+  .count-line .qty input { width: 88px; }
+}
