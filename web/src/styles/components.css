@@ -149,7 +149,7 @@
 .count-head { position: sticky; top: var(--nav-h); z-index: 20; background: var(--bg); padding: 8px 0 10px; margin: -8px 0 8px; }
 @media (min-width: 768px) { .count-head { top: 0; } }
 .progress { height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
-.progress > i { display: block; height: 100%; background: var(--brand); border-radius: 3px; transition: width 260ms cubic-bezier(.2,.8,.2,1); }
+.progress > i { display: block; height: 100%; width: 100%; background: var(--brand); border-radius: 3px; transform-origin: left; transition: transform 260ms cubic-bezier(.2,.8,.2,1); }
 .sheet-section { margin-top: 18px; }
 .sheet-section > header {
   position: sticky; top: calc(var(--nav-h) + 62px); z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 10px;

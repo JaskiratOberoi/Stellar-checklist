@@ -112,7 +112,7 @@ export function CountPage() {
         {editable && (
           <>
             <div className="row between small muted" style={{ marginBottom: 4 }}><span>{h.confirmed_count} of {h.line_count} lines confirmed</span><span className="tnum">{pct}%</span></div>
-            <div className="progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${pct}%` }} /></div>
+            <div className="progress" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}><i style={{ transform: `scaleX(${pct / 100})` }} /></div>
           </>
         )}
       </div>

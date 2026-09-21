@@ -41,6 +41,24 @@ docs/       Architecture, database, API, roles, UX, deployment, roadmap
 | [docs/07-roadmap.md](docs/07-roadmap.md) | Build phases and acceptance criteria |
 | [db/sql/001_schema.sql](db/sql/001_schema.sql) | Initial PostgreSQL schema |
 
-## Status
+## Status (2026-09-21)
 
-Planning complete (2026-09-21). No application code yet. Phase 1 build starts from `docs/07-roadmap.md`.
+Built and working end to end on the dev stack: API (auth, counts, ledger, snapshots, super-admin reports,
+admin, export/ingest API) and the web PWA (every screen in `docs/05-ux-and-design.md` except reminders).
+Not yet done: webhooks, rate limiting, offline drafts, notifications (parked), production deployment.
+
+## Running it locally
+
+```bash
+api/dev.sh up        # dev Postgres + .NET SDK container (no local SDK needed)
+api/dev.sh fresh     # reset DB, build, start API on http://localhost:8095 with seed data
+api/dev.sh smoke     # 31 end-to-end checks
+cd web && npm install && npm run dev   # http://localhost:5173, proxies /api to the dev API
+```
+
+Dev sign-ins: `admin@sms.local / ChangeMe123!` (super admin), `admin.ops@sms.local / Admin123!`,
+`manager@sms.local / Manager123!` (both units), `tech@sms.local / Tech123!` (Delhi only), `viewer@sms.local / Viewer123!`.
+
+Production: `docker compose -f deploy/docker-compose.yml up -d --build` on the Noble host with `deploy/.env`
+filled in; `cd web && npm run build` and publish `web/dist` to Hostinger with `VITE_API_URL` set
+(`web/.env.example`). See `docs/06-deployment.md`.
