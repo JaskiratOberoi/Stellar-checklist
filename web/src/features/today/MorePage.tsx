@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthProvider';
 import { Icon, PageHead, Panel, type IconName } from '@/ui';
+import { AppLockup, NobleLogo } from '@/ui/Brand';
 
 export function MorePage() {
   const { user, bu, can, logout } = useAuth();
@@ -29,6 +30,10 @@ export function MorePage() {
         ))}
         <button className="alert-row" style={{ width: '100%', background: 'none', border: 0, color: 'var(--danger)', textAlign: 'left' }} onClick={() => logout().then(() => nav('/login'))}><Icon name="logout" size={20} /><span className="grow">Sign out</span></button>
       </Panel>
+      <div className="row between wrap" style={{ marginTop: 20, padding: '0 4px' }}>
+        <AppLockup size={20} />
+        <NobleLogo height={24} />
+      </div>
     </>
   );
 }

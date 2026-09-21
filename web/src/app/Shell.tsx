@@ -3,6 +3,7 @@ import { NavLink, Navigate, Outlet, useLocation, useNavigate } from 'react-route
 import { useAuth } from '@/auth/AuthProvider';
 import { useAlerts } from '@/api/hooks';
 import { Icon, type IconName } from '@/ui';
+import { AppLockup, InfinityMark, NobleLogo } from '@/ui/Brand';
 
 interface Nav { to: string; label: string; icon: IconName; show: boolean }
 
@@ -63,8 +64,10 @@ export function Shell() {
   return (
     <div className="shell">
       <aside className="rail hide-mobile">
-        <div className="brand"><img src="/icons/icon.svg" alt="" width={30} height={30} />SMS</div>
-        {buSwitch}
+        <div className="brandhead">
+          <AppLockup />
+          {buSwitch}
+        </div>
         <div className="group">Daily</div>
         {primary.filter(n => n.show).map(link)}
         {manage.some(n => n.show) && <><div className="group">Unit</div>{manage.filter(n => n.show).map(link)}</>}
@@ -72,11 +75,16 @@ export function Shell() {
         <div className="spacer" />
         <NavLink to="/settings" className={({ isActive }) => `navlink ${isActive ? 'active' : ''}`}><Icon name="settings" />{user.full_name}</NavLink>
         <button className="navlink" onClick={() => logout().then(() => nav('/login'))}><Icon name="logout" />Sign out</button>
+        <div className="noble-foot">
+          <NobleLogo height={26} />
+          <small>Stock for every Noble unit · run on Infinity</small>
+        </div>
       </aside>
       <div className="content">
         <header className="topbar hide-desktop">
-          <div className="brand"><img src="/icons/icon.svg" alt="" width={28} height={28} /></div>
+          <InfinityMark height={22} />
           <div className="grow">{buSwitch}</div>
+          <NobleLogo height={20} />
           <NavLink to="/settings" aria-label="Settings" className="btn ghost icon"><Icon name="settings" /></NavLink>
         </header>
         <main className="main"><Outlet /></main>

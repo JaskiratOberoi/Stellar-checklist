@@ -3,6 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { auth, errorMessage } from '@/api/client';
 import { useAuth } from '@/auth/AuthProvider';
 import { Button, Field, Input } from '@/ui';
+import { InfinityMark, NobleLogo } from '@/ui/Brand';
 
 export function LoginPage() {
   const { session } = useAuth();
@@ -25,16 +26,20 @@ export function LoginPage() {
 
   return (
     <div className="login">
-      <form className="card" onSubmit={submit}>
-        <div className="brand">
-          <img src="/icons/icon.svg" alt="" />
-          <div><h1>Stock Management System</h1><p>Reagents and materials, every business unit</p></div>
-        </div>
-        <Field label="Email"><Input type="email" autoComplete="username" inputMode="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus /></Field>
-        <Field label="Password" error={error}><Input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required /></Field>
-        <Button type="submit" variant="primary" block loading={busy}>Sign in</Button>
-        <p className="faint small" style={{ marginTop: 14, textAlign: 'center' }}>Forgotten your password? Ask an admin for a reset.</p>
-      </form>
+      <div className="wrap">
+        <NobleLogo height={54} />
+        <form className="card" onSubmit={submit}>
+          <div className="brand">
+            <InfinityMark height={34} />
+            <h1>Stock Management System</h1>
+            <span className="by">part of <b>Infinity</b></span>
+          </div>
+          <Field label="Email"><Input type="email" autoComplete="username" inputMode="email" value={email} onChange={e => setEmail(e.target.value)} required autoFocus /></Field>
+          <Field label="Password" error={error}><Input type="password" autoComplete="current-password" value={password} onChange={e => setPassword(e.target.value)} required /></Field>
+          <Button type="submit" variant="primary" block loading={busy}>Sign in</Button>
+        </form>
+        <p className="foot">Reagents and materials for every Noble business unit. Forgotten your password? Ask an admin for a reset.</p>
+      </div>
     </div>
   );
 }

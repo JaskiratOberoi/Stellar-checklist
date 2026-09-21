@@ -43,21 +43,37 @@
    prompt to add it. Confirm.
 5. Today screen shows Closing · Submitted 21:14. The manager's escalation is cancelled server-side.
 
+## Branding
+
+SMS is an Infinity product run for Noble Diagnostics, and both identities appear in every bar, never merged
+(the same rule as Stellar-Infinity's `NobleMark.tsx`):
+
+- **Infinity**: the cyan→teal→blue double-helix figure-8 (`web/src/ui/Brand.tsx`, same geometry as Infinity's
+  `Mark.tsx`) beside the `SMS` wordmark with the small line "Stock Management · Infinity". Primary buttons and
+  the progress bar carry the Infinity gradient (`#0e7490 → #0f766e → #1d4ed8`, bright stops in dark mode).
+- **Noble Diagnostics**: the supplied navy roundel + wordmark PNG (`web/public/branding/noble-logo-onlight.png`,
+  `-ondark.png`, copied from Stellar-Infinity), shown after a hairline divider. Login shows it above the card;
+  the desktop rail shows it at the foot; the phone top bar shows it right of the unit switcher.
+- The login ground is Infinity's splash: faint 32px grid, cyan and blue ambient glows, glassy card.
+
 ## Design tokens
 
-Modern lab feel: cool, precise, high-contrast, quiet colour except for status. No gradients on data surfaces.
+Infinity's palette on a cool clinical ground: precise, high-contrast, quiet colour except for status and the
+one gradient reserved for primary actions. Values below supersede the first draft (2026-09-21 branding pass).
 
 | Token | Light | Dark | Use |
 | --- | --- | --- | --- |
-| `--bg` | `#F4F7F9` | `#0B1220` | app background |
-| `--surface` | `#FFFFFF` | `#111A2B` | cards, sheets |
-| `--surface-2` | `#EAF0F4` | `#182338` | table headers, section bands |
-| `--ink` | `#0E1726` | `#E6EDF5` | primary text |
-| `--ink-2` | `#4B5A6B` | `#9FB0C3` | secondary text |
-| `--line` | `#D6DEE6` | `#243247` | borders |
-| `--brand` | `#0E8C8C` | `#2BB5B5` | primary actions, active nav (teal) |
-| `--brand-ink` | `#FFFFFF` | `#06201F` | text on brand |
-| `--accent` | `#2563EB` | `#60A5FA` | links, focus ring |
+| `--bg-top` / `--bg-bottom` | `#fbfdff` / `#eaf4f8` | `#0c1826` / `#08111b` | page ground gradient |
+| `--surface` | `#ffffff` | `#111f2e` | cards, sheets |
+| `--surface-2` | `#eef4f7` | `#172a3c` | table headers, section bands |
+| `--ink` | `#0f2233` | `#e6eef7` | primary text |
+| `--ink-2` | `#4a5f72` | `#9fb3c6` | secondary text |
+| `--line` | `rgba(15,34,51,.10)` | `rgba(230,238,247,.10)` | borders |
+| `--cyan` / `--teal` / `--blue` | `#06b6d4` / `#0d9488` / `#2563eb` | `#22d3ee` / `#2dd4bf` / `#60a5fa` | the Infinity mark and gradient stops |
+| `--brand` | `#0f766e` | `#2dd4bf` | active nav, links, brand chips (AA on the surface) |
+| `--grad-from/mid/to` | `#0e7490` / `#0f766e` / `#1d4ed8` | `#22d3ee` / `#2dd4bf` / `#60a5fa` | primary button and progress gradient |
+| `--brand-ink` | `#ffffff` | `#071019` | text on the gradient |
+| `--noble` | `#2e2a6b` | `#ffffff` | Noble navy (the PNG swaps to the white version in dark) |
 | `--ok` | `#15803D` | `#4ADE80` | submitted, in stock |
 | `--warn` | `#B45309` | `#FBBF24` | variance, low stock, due soon |
 | `--danger` | `#B91C1C` | `#F87171` | missed, out of stock, expired |

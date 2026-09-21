@@ -13,8 +13,8 @@ export default defineConfig({
         name: 'Stock Management System',
         short_name: 'SMS',
         description: 'Reagent and materials stock for every business unit',
-        theme_color: '#0E8C8C',
-        background_color: '#F4F7F9',
+        theme_color: '#0f766e',
+        background_color: '#f6f9fb',
         display: 'standalone',
         start_url: '/',
         icons: [

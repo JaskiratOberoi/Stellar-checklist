@@ -1,0 +1,79 @@
+/* ---- brand lockups ------------------------------------------------------- */
+.lockup { display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; }
+.lockup__text { display: flex; flex-direction: column; line-height: 1.05; }
+.lockup__text b { font-size: 16px; font-weight: 700; letter-spacing: 0.16em; color: var(--ink); }
+.lockup__text small { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); margin-top: 3px; }
+.infinity-mark { display: block; flex: none; }
+.noble-logo { display: flex; align-items: center; flex: none; }
+.noble-logo img { display: block; width: auto; opacity: 0.9; }
+.brandbar { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brandbar .noble-logo { padding-left: 14px; border-left: 1px solid var(--line); }
+.brandbar.compact { gap: 10px; }
+.brandbar.compact .noble-logo { padding-left: 10px; }
+.brandbar.compact .lockup__text b { font-size: 14px; }
+
+/* ---- surfaces with the Infinity feel -------------------------------------- */
+body { background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%) fixed; }
+.btn.primary {
+  background: linear-gradient(92deg, var(--grad-from), var(--grad-mid) 55%, var(--grad-to));
+  border-color: transparent; color: var(--brand-ink);
+  box-shadow: 0 6px 18px rgb(13 148 136 / 22%);
+}
+.btn.primary:hover { background: linear-gradient(92deg, var(--grad-from), var(--grad-mid) 45%, var(--grad-to)); filter: saturate(1.08) brightness(1.04); box-shadow: 0 8px 22px rgb(13 148 136 / 30%); }
+.btn.primary:active { box-shadow: 0 3px 10px rgb(13 148 136 / 22%); }
+.btn:focus-visible, .input:focus-visible, .select:focus-visible, .textarea:focus-visible, .bu-switch:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--brand-ring); border-color: var(--teal); }
+.input:focus, .select:focus, .textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--brand-ring); }
+.panel { box-shadow: var(--shadow); border-color: var(--line); }
+.navlink.active { background: var(--brand-soft); color: var(--brand); }
+.navlink.active svg { color: var(--teal); }
+.tabbar a.active { color: var(--brand); }
+.tabbar a.active svg { color: var(--teal); }
+.chip.brand { background: var(--brand-soft); color: var(--brand); }
+.session-row .glyph { background: var(--brand-softer); color: var(--teal); }
+.session-row.submitted .glyph { background: var(--ok-soft); color: var(--ok); }
+.session-row.missed .glyph { background: var(--danger-soft); color: var(--danger); }
+.session-row.draft .glyph { background: var(--warn-soft); color: var(--warn); }
+.sheet-section > header { background: color-mix(in srgb, var(--surface) 80%, var(--brand-soft)); }
+.progress > i { background: linear-gradient(90deg, var(--grad-from), var(--grad-mid) 55%, var(--grad-to)); }
+.table-wrap th { letter-spacing: 0.08em; font-size: 11px; }
+.page-head h1 { font-size: 24px; letter-spacing: -0.015em; }
+tbody tr:hover { background: var(--brand-softer); }
+
+/* rail + topbar carry the pairing */
+.rail .brandhead { display: flex; flex-direction: column; gap: 12px; padding: 8px 8px 16px; border-bottom: 1px solid var(--line-2); margin-bottom: 8px; }
+.rail .noble-foot { margin-top: 8px; padding: 12px 8px 4px; border-top: 1px solid var(--line-2); display: flex; flex-direction: column; gap: 6px; }
+.rail .noble-foot small { color: var(--ink-3); font-size: 11px; letter-spacing: 0.04em; }
+.topbar { background: color-mix(in srgb, var(--surface) 82%, transparent); }
+.topbar .noble-logo img { height: 20px; }
+
+/* ---- login: the Infinity splash ground ------------------------------------ */
+.login {
+  position: relative; isolation: isolate; overflow: hidden;
+  background:
+    repeating-linear-gradient(0deg, rgba(13, 148, 136, 0.06) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(90deg, rgba(13, 148, 136, 0.06) 0 1px, transparent 1px 32px),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+}
+.login::before, .login::after {
+  content: ""; position: absolute; z-index: -1; border-radius: 50%; filter: blur(70px); opacity: 0.55; pointer-events: none;
+}
+.login::before { width: 520px; height: 520px; left: -160px; top: -180px; background: radial-gradient(circle, rgba(6, 182, 212, 0.35), transparent 65%); }
+.login::after { width: 560px; height: 560px; right: -200px; bottom: -220px; background: radial-gradient(circle, rgba(37, 99, 235, 0.30), transparent 65%); }
+.login .wrap { width: min(420px, 100%); display: flex; flex-direction: column; align-items: center; gap: 22px; }
+.login .noble-logo img { height: 54px; opacity: 1; }
+.login .card { width: 100%; padding: 30px 28px 26px; border-radius: 18px; box-shadow: var(--shadow-lg); background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: blur(14px); }
+.login .card .brand { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; margin-bottom: 22px; }
+.login .card .brand h1 { font-size: 21px; letter-spacing: -0.01em; }
+.login .card .brand .by { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
+.login .card .brand .by b { color: var(--brand); letter-spacing: 0.2em; }
+.login .foot { font-size: 12px; color: var(--ink-3); text-align: center; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .login { background:
+    repeating-linear-gradient(0deg, rgba(45, 212, 191, 0.05) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(90deg, rgba(45, 212, 191, 0.05) 0 1px, transparent 1px 32px),
+    linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .login .card { animation: card-in 420ms cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes card-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+}
