@@ -325,7 +325,15 @@ public static class CountEndpoints
         var header = await Header(conn, countId);
         var lines = await conn.QueryAsync<CountLine>(LineSelect, new { countId });
         var tolerance = await conn.ExecuteScalarAsync<decimal>("SELECT variance_tolerance_pct FROM business_unit WHERE id = @id", new { id = header.BuId });
-        return new { header, lines, variance_tolerance_pct = tolerance };
+        // Lot-tracked items with no lot on record cannot be counted until a lot exists; the sheet shows them so the
+        // tech can book the opening stock (a receipt) right there instead of the item silently going uncounted.
+        var uncounted = header.Status == "draft"
+            ? await conn.QueryAsync<BuItemEndpoints.BuItemRow>(BuItemEndpoints.Select + """
+                 WHERE bi.bu_id = @buId AND bi.is_active AND i.is_active AND i.tracks_lot
+                   AND NOT EXISTS (SELECT 1 FROM stock_lot sl WHERE sl.bu_item_id = bi.id AND sl.status IN ('active','quarantined'))
+                """ + BuItemEndpoints.Order, new { buId = header.BuId })
+            : [];
+        return new { header, lines, variance_tolerance_pct = tolerance, uncounted_lot_items = uncounted };
     }
 
     /// <summary>

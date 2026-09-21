@@ -63,3 +63,14 @@ FROM instrument ins JOIN item i ON i.instrument_model_id = ins.instrument_model_
 
 INSERT INTO bu_item(bu_id, item_id, min_level)
 SELECT b.id, i.id, i.default_min_level FROM business_unit b CROSS JOIN item i WHERE i.instrument_model_id IS NULL;
+
+-- Starting stock: one lot per lot-tracked item in every BU, booked as a receipt yesterday so the first
+-- count sheet has something to count. Lot numbers are synthetic.
+INSERT INTO stock_lot(id, bu_item_id, lot_no, expiry_date, received_on, received_qty)
+SELECT gen_random_uuid(), bi.id, 'L' || upper(substr(md5(bi.id::text), 1, 6)), CURRENT_DATE + 300, CURRENT_DATE - 1,
+       i.pack_size * CASE WHEN i.kind IN ('reagent') THEN 2 WHEN i.kind = 'consumable' THEN 5 ELSE 1 END
+FROM bu_item bi JOIN item i ON i.id = bi.item_id WHERE i.tracks_lot;
+
+INSERT INTO stock_movement(bu_item_id, lot_id, movement_type, qty_delta, occurred_on, occurred_at, reference_type, note)
+SELECT l.bu_item_id, l.id, 'receipt', l.received_qty, l.received_on, now() - interval '1 day', 'seed', 'Opening stock (dev seed)'
+FROM stock_lot l;

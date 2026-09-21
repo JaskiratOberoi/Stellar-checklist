@@ -34,6 +34,7 @@ ok(items.length > 15, `BU has ${items.length} tracked items`);
 const cellpack = items.find(i => i.item_code === 'RG-XN-CELLPACK');
 const gloves = items.find(i => i.item_code === 'MT-GLOVES-M');
 ok(cellpack?.instrument_label && cellpack.tracks_lot, 'CELLPACK is instrument-bound and lot tracked');
+const seedOnHand = cellpack.qty_on_hand; // dev seed books one starting lot per lot-tracked item
 
 const receipt = await call('POST', `/api/v1/bus/${bu}/lots`, { token: T, body: { bu_item_id: cellpack.id, lot_no: 'L2609A', expiry_date: '2027-06-30', packs: 2 } });
 ok(receipt.status === 201 && receipt.json.lot.qty_on_hand === 40000, `receipt creates lot with 40000 mL on hand (got ${receipt.json.lot?.qty_on_hand})`);
@@ -82,7 +83,7 @@ const today = (await call('GET', `/api/v1/bus/${bu}/counts/today`, { token: T })
 ok(today.opening_status === 'submitted' && today.closing_status === 'submitted', 'today shows both sessions submitted');
 
 const levels = (await call('GET', `/api/v1/bus/${bu}/levels`, { token: T })).json;
-ok(levels.find(l => l.id === cellpack.id)?.qty_on_hand === 37500, 'level = last closing count');
+ok(levels.find(l => l.id === cellpack.id)?.qty_on_hand === 37500 + seedOnHand, `level = last closing count across lots (${37500 + seedOnHand})`);
 
 // ---- role boundaries -------------------------------------------------------
 const viewer = await login('viewer@sms.local', 'Viewer123!');
@@ -109,7 +110,7 @@ ok(grouped.groups.length >= 1, 'grouped consumption by instrument');
 
 const snap = (await call('GET', `/api/v1/bus/${bu}/snapshots?period_type=week`, { token: manager.access_token })).json;
 const snapCp = snap.items.find(s => s.bu_item_id === cellpack.id);
-ok(snapCp && snapCp.closing_qty === 37500 && snapCp.consumed_qty === undefined, 'manager weekly snapshot has closing but no consumed field');
+ok(snapCp && snapCp.closing_qty === 37500 + seedOnHand && snapCp.consumed_qty === undefined, 'manager weekly snapshot has closing but no consumed field');
 
 const keyRes = await call('POST', '/api/v1/admin/api-keys', { token: A, body: { name: 'smoke-' + Date.now(), scopes: ['export:counts', 'export:consumption', 'catalogue:read'] } });
 ok(keyRes.status === 201 && keyRes.json.key.startsWith('sms_live_'), 'API key issued');

@@ -1,0 +1,68 @@
+/* Design tokens · SMS · see docs/05-ux-and-design.md */
+:root {
+  color-scheme: light;
+  --bg: #f4f7f9;
+  --surface: #ffffff;
+  --surface-2: #eaf0f4;
+  --surface-3: #dfe7ed;
+  --ink: #0e1726;
+  --ink-2: #4b5a6b;
+  --ink-3: #74839a;
+  --line: #d6dee6;
+  --line-2: #e6ecf1;
+  --brand: #0e8c8c;
+  --brand-hover: #0b7676;
+  --brand-soft: #dff2f2;
+  --brand-ink: #ffffff;
+  --accent: #2563eb;
+  --ok: #15803d;
+  --ok-soft: #dcf5e6;
+  --warn: #b45309;
+  --warn-soft: #fdecd3;
+  --danger: #b91c1c;
+  --danger-soft: #fde2e2;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --radius-pill: 999px;
+  --shadow: 0 1px 2px rgb(14 23 38 / 6%), 0 6px 16px rgb(14 23 38 / 7%);
+  --shadow-lg: 0 8px 24px rgb(14 23 38 / 14%), 0 2px 6px rgb(14 23 38 / 8%);
+  --font: "Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Source Code Pro", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --nav-h: 56px;
+  --tab-h: 64px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --chart-1: #0e8c8c;
+  --chart-grid: #e1e7ec;
+  --chart-axis: #c3ccd5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0b1220;
+    --surface: #111a2b;
+    --surface-2: #182338;
+    --surface-3: #1f2c44;
+    --ink: #e6edf5;
+    --ink-2: #9fb0c3;
+    --ink-3: #7c8ca0;
+    --line: #243247;
+    --line-2: #1c2839;
+    --brand: #2bb5b5;
+    --brand-hover: #3cc6c6;
+    --brand-soft: #123434;
+    --brand-ink: #06201f;
+    --accent: #60a5fa;
+    --ok: #4ade80;
+    --ok-soft: #0f2d1c;
+    --warn: #fbbf24;
+    --warn-soft: #3a2a09;
+    --danger: #f87171;
+    --danger-soft: #3d1414;
+    --shadow: none;
+    --shadow-lg: 0 8px 24px rgb(0 0 0 / 40%);
+    --chart-1: #2bb5b5;
+    --chart-grid: #243247;
+    --chart-axis: #34455e;
+  }
+}

@@ -1,0 +1,16 @@
+# Hostinger (Apache): SPA routing + cache policy
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.html [L]
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|woff2|png|svg)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "(index\.html|sw\.js|manifest\.webmanifest|registerSW\.js)$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

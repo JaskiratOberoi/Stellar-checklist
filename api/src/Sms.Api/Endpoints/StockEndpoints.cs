@@ -123,10 +123,14 @@ public static class StockEndpoints
             var me = Current.From(http.User);
             await using var conn = await db.Open();
             await me.RequireBu(conn, buId);
-            var b = await conn.QuerySingleOrDefaultAsync<BusinessUnitEndpoints.BuRow>("SELECT id, timezone, opening_due_time, closing_due_time, grace_minutes FROM business_unit WHERE id = @buId", new { buId })
+            var b = await conn.QuerySingleOrDefaultAsync<BusinessUnitEndpoints.BuRow>("SELECT id, timezone, opening_due_time, closing_due_time, grace_minutes, created_at FROM business_unit WHERE id = @buId", new { buId })
                     ?? throw ApiException.NotFound("Business unit");
             var now = Periods.NowIn(b.Timezone);
             var today = DateOnly.FromDateTime(now);
+            // A unit cannot have missed a count before it existed or before it tracked anything.
+            var firstDay = DateOnly.FromDateTime(b.CreatedAt);
+            var firstCount = await conn.ExecuteScalarAsync<DateOnly?>("SELECT min(count_date) FROM stock_count WHERE bu_id = @buId", new { buId });
+            if (firstCount is not null && firstCount < firstDay) firstDay = firstCount.Value;
 
             var low = await conn.QueryAsync<BuItemEndpoints.BuItemRow>(BuItemEndpoints.Select + " WHERE bi.bu_id = @buId AND bi.is_active AND COALESCE(cs.is_low, false)" + BuItemEndpoints.Order, new { buId });
             var expiring = await conn.QueryAsync<LotRow>(LotSelect + " WHERE bi.bu_id = @buId AND l.status = 'active' AND l.expiry_date IS NOT NULL AND l.expiry_date <= @limit ORDER BY l.expiry_date", new { buId, limit = today.AddDays(30) });
@@ -135,6 +139,7 @@ public static class StockEndpoints
             var missed = new List<object>();
             for (var d = today.AddDays(-7); d <= today; d = d.AddDays(1))
             {
+                if (d < firstDay) continue;
                 foreach (var (session, due) in new[] { ("opening", b.OpeningDueTime), ("closing", b.ClosingDueTime) })
                 {
                     if (submitted.Contains((d, session))) continue;
