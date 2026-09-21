@@ -31,8 +31,6 @@ services:
     depends_on:
       sms-db:
         condition: service_healthy
-    secrets:
-      - fcm
     expose:
       - "8080"
 
@@ -49,10 +47,6 @@ services:
       - sms_caddy_config:/config
     depends_on:
       - sms-api
-
-secrets:
-  fcm:
-    file: ./secrets/fcm-service-account.json
 
 volumes:
   sms_pgdata:

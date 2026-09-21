@@ -12,11 +12,10 @@ Each phase ends with a deployable increment on the staging stack and a commit on
 - Web PWA installable, deployed to Hostinger; API on the Noble host behind Caddy.
 - Accept: a tech logs opening and closing for a BU from a phone browser in under two minutes.
 
-## Phase 2 · Ledger and mobile
+## Phase 2 · Ledger
 - Lots and receipts, wastage, adjustments, transfers; `v_current_stock`; low-stock and expiry alerts.
-- Capacitor Android + iOS builds, device registration, FCM push.
-- Reminders: config UI, device-local scheduling, missed-count escalation job.
-- Accept: a missed closing count produces a push to the tech, then to the manager.
+- Missed-count status on Today and in a manager view (no push; notifications are parked).
+- Accept: a receipt, a wastage entry and a transfer all reconcile in the next day's expected opening.
 
 ## Phase 3 · Periods and super admin analytics
 - Nightly `SnapshotBuilder` for week and month; lock/unlock with audit.
@@ -30,6 +29,7 @@ Each phase ends with a deployable increment on the staging stack and a commit on
 - Accept: Infinity pulls yesterday's counts and consumption for all BUs via one call per resource.
 
 ## Phase 5 · Hardening
+- Reminders and push notifications (parked 2026-09-21; Web Push + VAPID when picked up).
 - Offline drafts on mobile (queue and sync), conflict handling.
 - Barcode / QR scan of lot labels on receipt and count.
 - Email digest for super_admin (weekly consumption, missed counts).

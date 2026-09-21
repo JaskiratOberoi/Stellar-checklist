@@ -1,7 +1,8 @@
 # Stock Management System (SMS)
 
 Reagent + materials stock management for every business unit (BU) of the lab network.
-One app, three surfaces: web (hosted on Hostinger), Android and iOS (Capacitor builds of the same code).
+One app, installable everywhere: a PWA hosted on Hostinger that installs on desktop, Android and iOS from the
+browser. Store builds via Capacitor are a later option and need no rewrite.
 Backend runs in Docker on the Noble host and exposes a versioned API for Matter and Infinity.
 
 ## What it does
@@ -12,8 +13,8 @@ Backend runs in Docker on the Noble host and exposes a versioned API for Matter 
 - **Weekly and monthly opening/closing snapshots** are frozen per item per BU.
 - **Consumption is derived server-side** (opening + receipts - closing - wastage) and is visible
   to the `super_admin` role only. No other role can see consumption, per BU or overall.
-- **Reminders** push notifications to phones (opening count due, closing count due, weekly review,
-  monthly close) with escalation to the BU manager when a count is missed.
+- **Reminders / push notifications are parked** (decision 2026-09-21). The schema keeps the `reminder`,
+  `device` and `notification` tables so they can be switched on later; no code targets them yet.
 - **Integration API** (API keys + webhooks) streams counts, movements, snapshots and consumption
   to Matter and Infinity.
 
@@ -22,7 +23,6 @@ Backend runs in Docker on the Noble host and exposes a versioned API for Matter 
 ```
 api/        ASP.NET Core 9 minimal API + background jobs      (Docker, this host)
 web/        React 18 + Vite + TypeScript PWA                  (Hostinger static hosting)
-mobile/     Capacitor 6 shell wrapping web/dist               (Play Store / App Store)
 db/sql/     Numbered PostgreSQL scripts, applied in order     (db/apply.ps1)
 deploy/     docker-compose + reverse-proxy config
 docs/       Architecture, database, API, roles, UX, deployment, roadmap
@@ -37,7 +37,7 @@ docs/       Architecture, database, API, roles, UX, deployment, roadmap
 | [docs/03-api.md](docs/03-api.md) | REST surface, auth, integration/export API, webhooks |
 | [docs/04-roles-and-permissions.md](docs/04-roles-and-permissions.md) | Roles, scopes, permission matrix |
 | [docs/05-ux-and-design.md](docs/05-ux-and-design.md) | Screens, flows, design tokens, mobile behaviour |
-| [docs/06-deployment.md](docs/06-deployment.md) | Docker on the Noble host, Hostinger frontend, store builds, push setup |
+| [docs/06-deployment.md](docs/06-deployment.md) | Docker on the Noble host, Hostinger frontend, backups |
 | [docs/07-roadmap.md](docs/07-roadmap.md) | Build phases and acceptance criteria |
 | [db/sql/001_schema.sql](db/sql/001_schema.sql) | Initial PostgreSQL schema |
 
