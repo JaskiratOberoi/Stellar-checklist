@@ -70,7 +70,7 @@ erDiagram
 | Table | Purpose | Notes |
 | --- | --- | --- |
 | `stock_count` | One row per BU, date and session (`opening`/`closing`) | Status `draft` → `submitted` → `locked` (by period lock). Reopen is audited. Unique per `(bu_id, count_date, session)`. |
-| `stock_count_line` | Quantity per bu_item (and lot) in that count | `expected_qty` is the prefill; `variance` is a stored generated column. `packs_entered`/`loose_entered` preserve what the tech typed. |
+| `stock_count_line` | Quantity per bu_item (and lot) in that count | `expected_qty` is the prefill; `variance` is a stored generated column. `packs_entered`/`loose_entered` preserve what the tech typed. `is_confirmed` marks lines the tech entered or explicitly accepted; submit requires every line confirmed. |
 
 ### Ledger
 | Table | Purpose | Notes |
@@ -114,19 +114,19 @@ erDiagram
 
 ## Derivation rules
 
-1. **Expected opening** for date D = closing(D−1) + Σ movements with `occurred_at` after that closing's `submitted_at`. If no closing exists, the last submitted count of any session is used. First-ever count has no expectation.
-2. **Consumption** is never written by a user. `v_daily_consumption` and `period_snapshot.consumed_qty` are the only places it exists.
+1. **Expected quantity** for a count = the last submitted count for that (bu_item, lot) + Σ movements with `occurred_at` after that count's `submitted_at` (and `occurred_on` on or before the count date). For an opening count that is usually the previous closing; for a closing count it is the same day's opening. A lot with no prior count starts from 0 plus its receipt movement. A first-ever count has no expectation.
+2. **Consumption** is never written by a user. `v_daily_consumption` and `period_snapshot.consumed_qty` are the only places it exists. A movement counts towards a day only when its `occurred_at` lies **between the opening submission and the closing submission**: a receipt logged before the morning count is already inside the opening figure, and anything after the closing count belongs to the next opening's expectation. Period snapshots use the same window (opening figure's timestamp to the closing count's timestamp).
 3. **Snapshot opening** = opening count on `period_start` if submitted, else the expected opening as in rule 1. **Snapshot closing** = closing count on `period_end`, else the latest closing inside the period (`missing_days` records the gap).
 4. **Lots**: when `item.tracks_lot`, count lines are per lot and the bu_item total is the sum. When a lot's counted qty reaches 0 on a submitted closing, the lot moves to `exhausted`.
 5. **Transfers** are two movements sharing `reference_id`: `transfer_out` on the source bu_item and `transfer_in` on `counterpart_bu_item_id`. Both are written in one transaction.
 
 ## Migration workflow
 
-Numbered scripts in `db/sql/` (`002_seed_dev.sql`, `003_…`). `db/apply.ps1` (Phase 1) runs each script not
-yet present in `sms_migration` inside a transaction, in filename order, against the `sms-db` container:
+Numbered scripts in `db/sql/` (`002_…`, `003_…`). The API applies every script not yet present in
+`sms_migration` at startup, in filename order, each inside a transaction (`api/src/Sms.Api/Data/Migrator.cs`),
+then reloads Npgsql's type catalog so new enums and extensions are usable immediately. `db/seed/dev.sql` is
+applied only when `SMS_SEED_DEV=true` and no business unit exists; dev users are created in code
+(`Auth/Bootstrap.cs`).
 
-```bash
-docker exec -i sms-db psql -U sms -d sms -v ON_ERROR_STOP=1 < db/sql/001_schema.sql
-```
-
-Same convention as Infinity's `api/db/apply.ps1`, so the habit carries over.
+Same convention as Infinity's numbered `api/db/sql`, so the habit carries over. Never edit an applied script;
+add the next number.

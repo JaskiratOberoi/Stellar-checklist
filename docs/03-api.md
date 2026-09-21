@@ -67,17 +67,21 @@ GET/POST      /catalogue/suppliers
 
 ### Counts
 ```
-GET    /bus/{buId}/counts?from=&to=&session=&status=
-GET    /bus/{buId}/counts/today                    both sessions for today (or empty shells with status)
-POST   /bus/{buId}/counts                          { count_date, session } → draft with prefilled lines
-GET    /counts/{countId}                           header + lines (grouped client-side by instrument)
-PUT    /counts/{countId}/lines                     [{ bu_item_id, lot_id?, qty | packs+loose, note? }]  (draft only)
-POST   /counts/{countId}/submit                    validates: every active bu_item present, variance notes where required
+GET    /bus/{buId}/counts?from=&to=&session=&status=&limit=
+GET    /bus/{buId}/counts/today                    { date, local_time, opening, closing, opening_status, closing_status, due times, grace }
+                                                   status ∈ submitted | draft | pending | missed
+POST   /bus/{buId}/counts                          { count_date?, session } → 201 draft with prefilled lines;
+                                                   200 if a draft already exists; 409 already_submitted
+GET    /counts/{countId}                           { header, lines, variance_tolerance_pct } (drafts re-sync lines on read)
+PUT    /counts/{countId}/lines                     [{ bu_item_id, lot_id?, qty? | packs?+loose?, note?, confirmed? }]  (draft only)
+POST   /counts/{countId}/confirm-remaining         marks every untouched line as confirmed at its expected qty
+POST   /counts/{countId}/submit                    { note? } · 400 with details.unconfirmed or details.missing_notes
 POST   /counts/{countId}/reopen                    bu_manager+, { reason } → status draft, audited
+DELETE /counts/{countId}                           bu_manager+, drafts only
 ```
-Prefill rule: for each active `bu_item` (and each active lot when `tracks_lot`), `expected_qty` = expected
-opening per `02-database.md` rule 1. The response flags `requires_note` when
-`|qty − expected| / expected > bu.variance_tolerance_pct`.
+Prefill rule: for each active `bu_item` (and each active lot when `tracks_lot`), `expected_qty` follows
+`02-database.md` rule 1. Lines carry `requires_note` when `|qty − expected| / expected × 100 > bu.variance_tolerance_pct`
+(or expected is 0 and qty is not). Submitting a closing count marks lots counted at zero as `exhausted`.
 
 ### Lots and movements
 ```
@@ -90,42 +94,44 @@ POST   /bus/{buId}/movements                       { bu_item_id, lot_id?, moveme
 POST   /bus/{buId}/transfers                       { from_bu_item_id, to_bu_id, to_bu_item_id?, lot_id?, qty, note }
                                                    → transfer_out + transfer_in pair, bu_manager+
 GET    /bus/{buId}/levels                          v_current_stock rows, ?low_only=true
-GET    /bus/{buId}/alerts                          low stock, lots expiring ≤30 d, missed counts (last 7 d)
+GET    /bus/{buId}/alerts                          { low_stock, expiring_lots (≤30 d), missed_counts (last 7 d), recent_variances }
+GET    /bus/{buId}/items/{buItemId}/history?days=  item drawer: { item, lots, counts, movements }
+GET    /bus/{buId}/items/suggestions?instrument_id= catalogue items not yet tracked (model reagents for an instrument, or general items)
 ```
+Movement types accepted on `POST /movements`: `wastage` (tech+), `adjustment` (manager+, signed qty, note required),
+`return_to_supplier`, `expiry_writeoff` (manager+). Receipts go through `/lots`, transfers through `/transfers`.
 
 ### Reminders and devices
-```
-GET/POST      /bus/{buId}/reminders
-PATCH/DELETE  /reminders/{id}
-GET           /me/reminders                        merged config the device schedules locally
-POST          /me/devices                          { platform, push_token, device_name, app_version }  (upsert)
-DELETE        /me/devices/{id}
-GET           /me/notifications?limit=             history / inbox
-POST          /me/notifications/test               sends a test push to the calling device
-```
+Parked (2026-09-21). No routes exist yet; the tables remain in the schema.
 
 ### Reports (super_admin only)
 ```
-GET /reports/consumption?group_by=bu|instrument|item&from=&to=&bu_id=&item_id=     totals + daily series
-GET /reports/consumption/daily?bu_id=&from=&to=                                   v_daily_consumption rows
-GET /reports/snapshots?period_type=week|month&period_start=&bu_id=                with consumed_qty
-GET /reports/missed-counts?from=&to=
-GET /reports/export.csv?...                                                       same filters, CSV
-POST /periods/lock    { bu_id, period_type, period_start }        super_admin
-POST /periods/unlock  { bu_id, period_type, period_start, reason }
+GET /reports/overview                                                              per-BU month-to-date + top items 30 d
+GET /reports/consumption?group_by=bu|instrument|item|bu_item&from=&to=&bu_id=&item_id=&kind=&instrument_id=
+                                                                                   { groups[], series[] }
+GET /reports/consumption/daily?bu_id=&from=&to=&bu_item_id=                       v_daily_consumption rows
+GET /reports/consumption/export.csv?...                                            same filters, CSV download
+GET /reports/snapshots?period_type=week|month&period_start=&bu_id=&rebuild=        with consumed_qty; builds missing snapshots on demand
+GET /reports/missed-counts?from=&to=&bu_id=                                        BU × day × session grid
+GET  /periods?bu_id=                                                               lock history
+POST /periods/lock    { bu_id, period_type, period_start, reason? }               only after the period has ended
+POST /periods/unlock  { bu_id, period_type, period_start, reason }                reason required
 ```
 Managers get opening/closing without consumption at:
 ```
-GET /bus/{buId}/snapshots?period_type=&period_start=      fields: opening_qty, received_qty, closing_qty, count_days, missing_days
+GET /bus/{buId}/snapshots?period_type=&period_start=&rebuild=   { period_type, period_start, period_end, is_locked, items[] }
+                                                                 item fields: opening_qty, received_qty, wastage_qty, transfer_qty,
+                                                                 adjustment_qty, closing_qty, count_days, missing_days
 ```
 
 ### Admin
 ```
-GET/POST      /admin/users              PATCH /admin/users/{id}   POST /admin/users/{id}/reset-password
+GET/POST      /admin/users              PATCH /admin/users/{id}   POST /admin/users/{id}/reset-password → { temporary_password }
 GET/POST      /admin/api-keys           super_admin; POST returns the plaintext key once
 POST          /admin/api-keys/{id}/revoke
-GET           /admin/audit?entity_type=&entity_id=&bu_id=&actor=&from=&to=
+GET           /admin/audit?entity_type=&entity_id=&bu_id=&actor=&action=&from=&to=&before_id=&limit=
 GET           /admin/jobs               recent job_run rows
+POST          /admin/jobs/snapshots/run { bu_id?, period_type?, period_start? }   super_admin; empty body = every BU
 GET           /health   /health/db
 ```
 
@@ -172,14 +178,18 @@ Example count export item:
 }
 ```
 
-### Webhooks
-```
-GET/POST  /export/v1/webhooks            scope webhooks:manage; { url, events[] } → { id, secret }
-DELETE    /export/v1/webhooks/{id}
-```
-Events: `count.submitted`, `count.reopened`, `movement.created`, `lot.created`, `snapshot.locked`,
-`period.unlocked`. Body `{ event, event_id, occurred_at, data }`, header `X-SMS-Signature: sha256=<hmac>`.
-Retries at 1, 5, 15, 60 min then hourly up to 8 attempts; receivers must be idempotent on `event_id`.
+The `bu` filter on export routes takes the **BU code** (e.g. `DEL-CENTRAL`), not the id.
+
+### Webhooks (not built yet)
+Planned for Phase 4: `GET/POST /export/v1/webhooks` with scope `webhooks:manage`; events `count.submitted`,
+`count.reopened`, `movement.created`, `lot.created`, `snapshot.locked`, `period.unlocked`; HMAC-SHA256 body
+signature in `X-SMS-Signature`; retries at 1, 5, 15, 60 min then hourly up to 8 attempts. Tables exist.
 
 ## Rate limits
-Per user 600 req/min; per API key 1200 req/min; login 10/min per IP. Returned in `X-RateLimit-*` headers.
+Not enforced yet. Planned: per user 600 req/min; per API key 1200 req/min; login 10/min per IP.
+
+## Running locally
+No local .NET SDK is needed: `api/dev.sh up && api/dev.sh fresh && api/dev.sh smoke` builds and runs the API
+inside the official SDK container against a dev Postgres, seeds sample data, and runs `api/smoke.mjs`
+(31 end-to-end checks). Dev sign-ins: `admin@sms.local / ChangeMe123!`, `manager@sms.local / Manager123!`,
+`tech@sms.local / Tech123!`, `viewer@sms.local / Viewer123!`.

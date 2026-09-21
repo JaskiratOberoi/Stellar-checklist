@@ -209,6 +209,7 @@ CREATE TABLE stock_count_line (
   packs_entered numeric(14,3),                            -- what the tech typed, for display only
   loose_entered numeric(14,3),
   expected_qty  numeric(14,3),                            -- prefill (previous closing + movements)
+  is_confirmed  boolean NOT NULL DEFAULT false,           -- tech confirmed or entered this line
   variance      numeric(14,3) GENERATED ALWAYS AS (qty - COALESCE(expected_qty, qty)) STORED,
   note          text,
   updated_by    uuid REFERENCES app_user(id),
@@ -470,28 +471,24 @@ LEFT JOIN v_last_count lc ON lc.bu_item_id = bi.id
 WHERE bi.is_active;
 
 -- Daily consumption. Query ONLY from Reports/Export repositories guarded by super_admin / export:consumption.
+-- Movements count towards a day only when they were recorded BETWEEN the opening and the closing submission:
+-- a receipt logged before the morning count is already inside the opening figure, and anything after the
+-- closing count belongs to the next opening's expectation. This mirrors the prefill rule.
 CREATE OR REPLACE VIEW v_daily_consumption AS
 WITH sess AS (
-  SELECT c.bu_id, c.count_date, c.session, l.bu_item_id, SUM(l.qty) AS qty
+  SELECT c.bu_id, c.count_date, c.session, c.submitted_at, l.bu_item_id, SUM(l.qty) AS qty
   FROM stock_count c
   JOIN stock_count_line l ON l.count_id = c.id
   WHERE c.status IN ('submitted','locked')
-  GROUP BY c.bu_id, c.count_date, c.session, l.bu_item_id
+  GROUP BY c.bu_id, c.count_date, c.session, c.submitted_at, l.bu_item_id
 ),
 days AS (
-  SELECT o.bu_id, o.count_date, o.bu_item_id, o.qty AS opening_qty, cl.qty AS closing_qty
+  SELECT o.bu_id, o.count_date, o.bu_item_id, o.qty AS opening_qty, cl.qty AS closing_qty,
+         o.submitted_at AS opening_at, cl.submitted_at AS closing_at
   FROM sess o
   JOIN sess cl ON cl.bu_id = o.bu_id AND cl.count_date = o.count_date
              AND cl.bu_item_id = o.bu_item_id AND cl.session = 'closing'
   WHERE o.session = 'opening'
-),
-mv AS (
-  SELECT bu_item_id, occurred_on,
-         SUM(qty_delta) FILTER (WHERE movement_type = 'receipt')                          AS received,
-         SUM(qty_delta) FILTER (WHERE movement_type IN ('wastage','expiry_writeoff'))     AS wastage,
-         SUM(qty_delta) FILTER (WHERE movement_type IN ('transfer_in','transfer_out'))    AS transfer_net,
-         SUM(qty_delta) FILTER (WHERE movement_type IN ('adjustment','return_to_supplier')) AS adjustment
-  FROM stock_movement GROUP BY bu_item_id, occurred_on
 )
 SELECT d.bu_id, d.bu_item_id, d.count_date,
        d.opening_qty, d.closing_qty,
@@ -502,6 +499,13 @@ SELECT d.bu_id, d.bu_item_id, d.count_date,
        d.opening_qty + COALESCE(mv.received,0) + COALESCE(mv.wastage,0)
          + COALESCE(mv.transfer_net,0) + COALESCE(mv.adjustment,0) - d.closing_qty AS consumed_qty
 FROM days d
-LEFT JOIN mv ON mv.bu_item_id = d.bu_item_id AND mv.occurred_on = d.count_date;
+LEFT JOIN LATERAL (
+  SELECT SUM(qty_delta) FILTER (WHERE movement_type = 'receipt')                          AS received,
+         SUM(qty_delta) FILTER (WHERE movement_type IN ('wastage','expiry_writeoff'))     AS wastage,
+         SUM(qty_delta) FILTER (WHERE movement_type IN ('transfer_in','transfer_out'))    AS transfer_net,
+         SUM(qty_delta) FILTER (WHERE movement_type IN ('adjustment','return_to_supplier')) AS adjustment
+  FROM stock_movement m
+  WHERE m.bu_item_id = d.bu_item_id AND m.occurred_at > d.opening_at AND m.occurred_at <= d.closing_at
+) mv ON true;
 
 INSERT INTO sms_migration(script) VALUES ('001_schema.sql') ON CONFLICT DO NOTHING;
