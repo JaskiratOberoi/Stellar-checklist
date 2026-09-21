@@ -1,0 +1,23 @@
+# secrets / env
+deploy/.env
+deploy/secrets/
+**/google-services.json
+**/GoogleService-Info.plist
+*.p8
+
+# .NET
+api/**/bin/
+api/**/obj/
+*.user
+
+# node
+node_modules/
+web/dist/
+mobile/android/build/
+mobile/android/app/build/
+mobile/ios/App/Pods/
+mobile/ios/App/build/
+
+# misc
+.DS_Store
+Thumbs.db

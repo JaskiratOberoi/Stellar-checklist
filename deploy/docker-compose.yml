@@ -1,0 +1,60 @@
+name: sms
+
+services:
+  sms-db:
+    image: postgres:16-alpine
+    container_name: sms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sms
+      POSTGRES_USER: sms
+      POSTGRES_PASSWORD: ${SMS_DB_PASSWORD:?set in deploy/.env}
+      TZ: Asia/Kolkata
+    volumes:
+      - sms_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sms -d sms"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  sms-api:
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    container_name: sms-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      TZ: Asia/Kolkata
+    depends_on:
+      sms-db:
+        condition: service_healthy
+    secrets:
+      - fcm
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2
+    container_name: sms-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - sms_caddy_data:/data
+      - sms_caddy_config:/config
+    depends_on:
+      - sms-api
+
+secrets:
+  fcm:
+    file: ./secrets/fcm-service-account.json
+
+volumes:
+  sms_pgdata:
+  sms_caddy_data:
+  sms_caddy_config:

@@ -1,0 +1,10 @@
+sms-api.genomicslab.in {
+	encode zstd gzip
+	reverse_proxy sms-api:8080
+	log {
+		output file /data/access.log {
+			roll_size 50mb
+			roll_keep 10
+		}
+	}
+}
