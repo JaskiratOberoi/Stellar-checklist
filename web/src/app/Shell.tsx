@@ -77,7 +77,7 @@ export function Shell() {
         <button className="navlink" onClick={() => logout().then(() => nav('/login'))}><Icon name="logout" />Sign out</button>
         <div className="noble-foot">
           <NobleLogo height={26} />
-          <small>Stock for every Noble unit · run on Infinity</small>
+          <small>Noble stock · run on Infinity</small>
         </div>
       </aside>
       <div className="content">

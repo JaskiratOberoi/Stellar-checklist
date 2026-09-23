@@ -79,3 +79,15 @@ tbody tr:hover { background: var(--brand-softer); }
 }
 .rail .bu-switch { width: 100%; max-width: none; justify-content: space-between; }
 .rail .bu-switch .code { display: none; }
+
+/* ---- fixes from the 1920×1080 review ------------------------------------- */
+/* Unit menu: never wrap a name or a code; in the rail it spans the rail. */
+.menu { min-width: 260px; }
+.menu button { white-space: nowrap; }
+.menu .code { white-space: nowrap; flex: none; }
+.rail .menu { left: 0; right: auto; min-width: 300px; }
+/* Quantity boxes are typed into, not nudged: hide the browser spinners. */
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* The rail scrolls on short screens instead of clipping its foot. */
+/* (rail stays unclipped so the unit menu can overhang it; the foot caption is short enough for 1080px) */
