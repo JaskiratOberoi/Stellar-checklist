@@ -53,7 +53,7 @@ Not yet done: webhooks, rate limiting, offline drafts, notifications (parked), p
 api/dev.sh up        # dev Postgres + .NET SDK container (no local SDK needed)
 api/dev.sh fresh     # reset DB, build, start API on http://localhost:8095 with seed data
 api/dev.sh smoke     # 31 end-to-end checks
-cd web && npm install && npm run dev   # http://localhost:5173, proxies /api to the dev API
+cd web && npm install && npm run dev   # http://localhost:5174, proxies /api to the dev API
 ```
 
 Dev sign-ins: `admin@sms.local / ChangeMe123!` (super admin), `admin.ops@sms.local / Admin123!`,

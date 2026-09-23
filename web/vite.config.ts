@@ -36,7 +36,7 @@ export default defineConfig({
   ],
   resolve: { alias: { '@': path.resolve(__dirname, 'src') } },
   server: {
-    port: 5173,
+    port: 5174,
     proxy: {
       '/api': { target: process.env.SMS_API_URL ?? 'http://127.0.0.1:8095', changeOrigin: true },
       '/export': { target: process.env.SMS_API_URL ?? 'http://127.0.0.1:8095', changeOrigin: true },
