@@ -1,5 +1,24 @@
 # 06 · Deployment
 
+## Staging (live since 2026-09-23)
+
+`https://sms-staging.genomicslab.in` → host cloudflared tunnel → `127.0.0.1:3140` → compose project
+`sms-staging` (`deploy/docker-compose.staging.yml`): its own Postgres volume, the API, and nginx serving the
+built web app while proxying `/api`, `/export`, `/ingest`, `/health` and `/openapi` to the API (same origin,
+so no CORS). It is a **sandbox**: seeded dev catalogue, dev users (`manager@sms.local / Manager123!`,
+`tech@sms.local / Tech123!`, `viewer@sms.local / Viewer123!`), super admin `admin@sms.local` with the
+password in `deploy/.env.staging` (git-ignored, generated). Nothing here touches Noble.
+
+Redeploy after a change:
+
+```bash
+docker compose -f deploy/docker-compose.staging.yml --env-file deploy/.env.staging up -d --build
+```
+
+Reset the sandbox database: `docker compose -f deploy/docker-compose.staging.yml --env-file deploy/.env.staging down -v`
+then `up -d`. The tunnel ingress lives in `C:\Users\Qugen Pathlabs\.cloudflared\config.yml`; restarting the
+`Cloudflared` Windows service needs an elevated prompt.
+
 ## Topology
 
 | Piece | Where | How |

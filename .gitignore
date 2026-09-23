@@ -1,5 +1,7 @@
 # secrets / env
 deploy/.env
+deploy/.env.*
+!deploy/.env.example
 deploy/secrets/
 **/google-services.json
 **/GoogleService-Info.plist

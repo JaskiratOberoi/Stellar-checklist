@@ -1,0 +1,66 @@
+# SMS — staging.
+#
+#   docker compose -f deploy/docker-compose.staging.yml --env-file deploy/.env.staging up -d --build
+#
+# Reached at https://sms-staging.genomicslab.in through the host cloudflared tunnel
+# (ingress -> http://localhost:3140). Same shape as Stellar-Infinity's staging: its own
+# project name, its own database, every port bound to 127.0.0.1 so the tunnel is the
+# only way in.
+#
+# Unlike Infinity staging this IS a sandbox: it has its own Postgres seeded with the dev
+# catalogue and dev users (SMS_SEED_DEV=true in deploy/.env.staging). Nothing here touches
+# Noble or the production SMS database.
+#
+# One nginx serves the built web app AND proxies /api, /export, /ingest and /health to the
+# API on the compose network, so the browser stays same-origin (no CORS, no VITE_API_URL).
+name: sms-staging
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: sms
+      POSTGRES_USER: sms
+      POSTGRES_PASSWORD: ${SMS_DB_PASSWORD:?set in deploy/.env.staging}
+      TZ: Asia/Kolkata
+    volumes:
+      - sms_staging_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sms -d sms"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: ..
+      dockerfile: api/Dockerfile
+    image: sms-staging-api
+    restart: unless-stopped
+    env_file: .env.staging
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      SMS_DB_CONNECTION: "Host=db;Database=sms;Username=sms;Password=${SMS_DB_PASSWORD}"
+      SMS_SQL_DIR: /app/db/sql
+      SMS_SEED_DIR: /app/db/seed
+      TZ: Asia/Kolkata
+    depends_on:
+      db:
+        condition: service_healthy
+    expose:
+      - "8080"
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+    image: sms-staging-web
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:3140:80"
+
+volumes:
+  sms_staging_pgdata:

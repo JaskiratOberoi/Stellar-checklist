@@ -45,6 +45,7 @@ docs/       Architecture, database, API, roles, UX, deployment, roadmap
 
 Built and working end to end on the dev stack: API (auth, counts, ledger, snapshots, super-admin reports,
 admin, export/ingest API) and the web PWA (every screen in `docs/05-ux-and-design.md` except reminders).
+**Staging is live at https://sms-staging.genomicslab.in** (sandbox database, dev sign-ins below; 2026-09-23).
 Not yet done: webhooks, rate limiting, offline drafts, notifications (parked), production deployment.
 
 ## Running it locally

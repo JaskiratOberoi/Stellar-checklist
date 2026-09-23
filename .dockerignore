@@ -1,0 +1,8 @@
+# Docker build context hygiene: never ship local build output or node_modules into an image.
+api/**/bin/
+api/**/obj/
+web/node_modules/
+web/dist/
+.git/
+.claude/
+docs/
